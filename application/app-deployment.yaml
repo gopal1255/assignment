@@ -1,0 +1,33 @@
+trigger:
+- none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: deploy
+  displayName: Build stage
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '16.x'
+        displayName: 'Install Node.js 16.x'
+
+      - script: |
+          npm install
+          npm build ui
+        displayName: 'npm install and build'
+        workingDirectory: '$(Build.SourcesDirectory)/application'
+
+      - task: AzureWebApp@1
+        displayName: 'Deploy App Service'
+        inputs:
+          azureSubscription: 'testassignment'
+          appType: 'webApp'
+          appName: 'testgopalassignapp01'
+          package: '$(Build.SourcesDirectory)/application'
+          deploymentMethod: 'auto'
